@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                xmlns:fresco="http://schemas.android.com/apk/res-auto"
+                >
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/iv_category"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        fresco:failureImage="@drawable/gradient_bcg"
+        fresco:placeholderImage="@drawable/gradient_bcg"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/input_layout_mail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:textColorHint="@color/gray"
+            android:theme="@style/TextLabel">
+
+            <EditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:backgroundTint="@color/white"
+                android:hint="E-mail"
+                android:imeOptions="flagNoExtractUi"
+                android:singleLine="true"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/white"/>
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/input_layout_imei"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_below="@+id/input_layout_mail"
+            android:textColorHint="@color/gray"
+            android:theme="@style/TextLabel">
+
+            <EditText
+                android:id="@+id/etImei"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:editable="false"
+                android:backgroundTint="@color/white"
+                android:hint="IMEI"
+                android:imeOptions="flagNoExtractUi"
+                android:singleLine="true"
+                android:textColor="@color/white"/>
+
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/btn_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/input_layout_imei"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="LOGIN"
+            android:textColor="@color/green"/>
+
+        <RelativeLayout
+            android:id="@+id/rl_signup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btn_login"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Not a memeber ? Sign up now."
+                android:textColor="@color/white"
+                android:layout_centerInParent="true"/>
+
+        </RelativeLayout>
+    </RelativeLayout>
+
+
+</RelativeLayout>

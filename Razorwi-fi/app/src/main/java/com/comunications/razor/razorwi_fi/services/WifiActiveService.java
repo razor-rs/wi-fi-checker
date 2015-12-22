@@ -42,14 +42,12 @@ public class WifiActiveService extends Service {
 
         int wifiState = intent.getExtras().getInt(Config.BUNDEL_KEY_CONNECTION_STATE);
 
-        switch (wifiState)
-        {
+        switch (wifiState) {
             case Config.WIFI_CONNECTED:
 
                 checkWifiConnectiosData();
 
                 break;
-
 
 
             case Config.WIFI_DISCONECTED:
@@ -59,7 +57,6 @@ public class WifiActiveService extends Service {
                 stopSelf();
                 break;
         }
-
 
 
         return START_NOT_STICKY;
@@ -76,30 +73,24 @@ public class WifiActiveService extends Service {
                 String mac = info.getMacAddress();
                 String ssid = info.getSSID();
 
-                Log.v(TAG, "The SSID name is: " + ssid );
+                Log.v(TAG, "The SSID name is: " + ssid);
 
-                if(ssid.length() > 0) {
-                    if (TextUtils.equals(ssid.substring(1, ssid.length()-1), Config.SSID))
-                    {
+                if (ssid.length() > 0) {
+                    if (TextUtils.equals(ssid.substring(1, ssid.length() - 1), Config.SSID)) {
                         Log.v(TAG, "The SSID & MAC are my: " + ssid + " " + mac);
 
-                        if(isConnectedAlready)
-                        {
+                        if (isConnectedAlready) {
 
-                        }
-                        else {
+                        } else {
                             PrefManager.GENERAL.getPref().putBoolean(Config.PREF_KEY_IS_CONNECTED, true);
                             createNotification(ssid, mac);
                         }
 
-                    }
-                    else {
+                    } else {
                         Log.v(TAG, "The SSID & MAC are not my: " + ssid + " " + mac);
                         PrefManager.GENERAL.getPref().putBoolean(Config.PREF_KEY_IS_CONNECTED, false);
                     }
-                }
-                else
-                {
+                } else {
                     Log.v(TAG, "The SSID lengt is null");
                     PrefManager.GENERAL.getPref().putBoolean(Config.PREF_KEY_IS_CONNECTED, false);
                 }
@@ -124,7 +115,6 @@ public class WifiActiveService extends Service {
                 .setStyle(new NotificationCompat.BigTextStyle().bigText("You're connected to " + ssid + " at " + mac))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .build();
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
-                .notify(0, n);
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, n);
     }
 }

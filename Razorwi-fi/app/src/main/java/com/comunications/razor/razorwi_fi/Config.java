@@ -5,7 +5,10 @@ package com.comunications.razor.razorwi_fi;
  */
 public class Config {
 
-    public static final String SSID = "JunakMlakonja";
+    public static final String PARSE_APPLICATION_KEY = "kqrFxRPxoRqKEpJTouKKeusE5LXU7JOvxBc0mK9F";
+    public static final String PARSE_CLIENT_KEY = "6x32ctEoqdssnOMjhPCzHcW3XL8lb6zlfV1QGbNs";
+
+    public static final String SSID = "RazorGuest";
     public static final int WIFI_CONNECTED = 1;
     public static final int WIFI_DISCONECTED = 2;
 

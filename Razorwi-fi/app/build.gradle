@@ -26,4 +26,8 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile 'de.greenrobot:eventbus:2.4.0'
     compile 'org.immutables:gson:2.1.4'
+    compile 'com.jakewharton:butterknife:7.0.1'
+    compile 'com.parse.bolts:bolts-android:1.+'
+    compile 'com.parse:parse-android:1.+'
+    compile 'com.facebook.fresco:fresco:0.7.0+'
 }
