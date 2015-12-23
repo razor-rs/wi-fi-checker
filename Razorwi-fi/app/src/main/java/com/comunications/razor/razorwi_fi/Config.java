@@ -15,5 +15,8 @@ public class Config {
     public static final String BUNDEL_KEY_CONNECTION_STATE = "connectionState";
 
     public static final String PREF_KEY_IS_CONNECTED = "isConnected";
+    public static final String PREF_KEY_IS_FIRST_TIME = "isFirstTime";
+    public static final String PREF_KEY_CURRENT_SESSION_ID = "currentSessionId";
+    public static final String PREF_KEY_CURRENT_SSID = "currentSSID";
     public static final String PREF_KEY_USER_NAME = "userName";
 }

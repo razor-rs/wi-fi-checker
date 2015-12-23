@@ -1,7 +1,9 @@
 package com.comunications.razor.razorwi_fi;
 
 import android.app.Application;
+import android.preference.PreferenceManager;
 
+import com.comunications.razor.razorwi_fi.storage.PrefManager;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.parse.Parse;
 import com.parse.ParseObject;
@@ -22,6 +24,6 @@ public class RazorWiFiApp extends Application{
 
         appInstance = this;
         Parse.initialize(this, Config.PARSE_APPLICATION_KEY, Config.PARSE_CLIENT_KEY);
-        Fresco.initialize(getApplicationContext());
+        PrefManager.GENERAL.initialize(getBaseContext());
     }
 }

@@ -1,21 +1,29 @@
 package com.comunications.razor.razorwi_fi.ui.activities;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.comunications.razor.razorwi_fi.Config;
 import com.comunications.razor.razorwi_fi.R;
+import com.comunications.razor.razorwi_fi.storage.PrefManager;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SignUpCallback;
@@ -26,25 +34,16 @@ import butterknife.OnClick;
 
 public class SignupActivity extends AppCompatActivity {
 
-    @Bind(R.id.etEmail) EditText etEmail;
-    @Bind(R.id.etImei) EditText etImei;
-    @Bind(R.id.btn_signup) Button bntSignup;
+    private final static String TAG = LoginActivity.class.getSimpleName();
 
+    @Bind(R.id.etEmail) EditText etEmail;
+    @Bind(R.id.btn_signup) Button bntSignup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
         ButterKnife.bind(this);
-
-        if (Build.VERSION.SDK_INT >= 21) {
-            Window window = this.getWindow();
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            window.setStatusBarColor(this.getResources().getColor(R.color.green));
-        }
-
-        setImei();
     }
 
     @Override
@@ -69,34 +68,60 @@ public class SignupActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * Find IMEI of device and set this value etImei
-     */
-    private void setImei()
-    {
-        TelephonyManager mngr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-        String imei = mngr.getDeviceId();
+    private boolean isConnectedToMyWiFi() {
 
-        etImei.setText(imei);
+        final WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        boolean isMyWiFi;
+
+        WifiInfo info = wifiManager.getConnectionInfo();
+        String mac = info.getMacAddress();
+        String ssid = info.getSSID();
+
+        Log.v(TAG, "The SSID name is: " + ssid);
+
+        if (ssid.length() > 0) {
+            if (TextUtils.equals(ssid.substring(1, ssid.length() - 1), Config.SSID)) {
+                Log.v(TAG, "The SSID & MAC are my: " + ssid + " " + mac);
+
+                return true;
+
+            } else {
+                Log.v(TAG, "The SSID & MAC are not my: " + ssid + " " + mac);
+                return false;
+            }
+        } else {
+            Log.v(TAG, "The SSID lengt is null");
+            return false;
+        }
     }
 
     @OnClick(R.id.btn_signup)
     public void onSignupClick()
     {
-        ParseUser user = new ParseUser();
+        if(isConnectedToMyWiFi()) {
+            ParseUser user = new ParseUser();
 
-        user.setUsername(etEmail.getText().toString().toLowerCase().trim());
-        user.setEmail(etEmail.getText().toString().toLowerCase().trim());
-        user.setPassword("123");
-        user.put("displayName", etEmail.getText().toString());
+            user.setUsername(etEmail.getText().toString().toLowerCase().trim());
+            user.setEmail(etEmail.getText().toString().toLowerCase().trim());
+            user.setPassword("123");
+            user.put("displayName", etEmail.getText().toString());
 
-        user.signUpInBackground(new SignUpCallback() {
-            @Override public void done(ParseException e) {
-                if (e == null) {
-                    Log.d("ParseInteresMe", "Succes ");
-                } else
-                    Log.d("ParseInterestME", "Error " + e.toString());
-            }
-        });
+            user.signUpInBackground(new SignUpCallback() {
+                @Override public void done(ParseException e) {
+                    if (e == null) {
+                        PrefManager.GENERAL.getPref().putBoolean(Config.PREF_KEY_IS_FIRST_TIME, true);
+                        Intent wifiInfo = new Intent(SignupActivity.this, WiFiInfoActivity.class);
+                        startActivity(wifiInfo);
+                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                        finish();
+                    } else
+                        Log.d("ParseInterestME", "Error " + e.toString());
+                }
+            });
+        }
+        else
+        {
+            Toast.makeText(getBaseContext(), "Please connect to RazorGuest Wi-fi", Toast.LENGTH_SHORT).show();
+        }
     }
 }

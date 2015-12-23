@@ -3,25 +3,37 @@ package com.comunications.razor.razorwi_fi.ui.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.comunications.razor.razorwi_fi.Config;
 import com.comunications.razor.razorwi_fi.R;
+import com.comunications.razor.razorwi_fi.storage.PrefManager;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.parse.LogInCallback;
+import com.parse.ParseException;
+import com.parse.ParseUser;
+import com.parse.SignUpCallback;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -29,33 +41,18 @@ import butterknife.OnClick;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private final static String TAG = LoginActivity.class.getSimpleName();
+
     @Bind(R.id.etEmail) EditText etEmail;
-    @Bind(R.id.etImei) EditText etImei;
     @Bind(R.id.btn_login) Button btnLogin;
     @Bind(R.id.rl_signup) RelativeLayout rlSignup;
-    @Bind(R.id.iv_category) SimpleDraweeView ivBck;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-
-        if (Build.VERSION.SDK_INT >= 21) {
-            Window window = this.getWindow();
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            window.setStatusBarColor(this.getResources().getColor(R.color.green));
-        }
-
-//        Uri uri;
-//        uri = Uri.parse("res://" + getResources().getDrawable(R.drawable.gradient_bcg));
-        
-        ImageRequest request = ImageRequestBuilder.newBuilderWithResourceId(R.drawable.grayrazor).setProgressiveRenderingEnabled(true).build();
-        DraweeController controller = Fresco.newDraweeControllerBuilder().setImageRequest(request).setOldController(ivBck.getController()).build();
-        ivBck.setController(controller);
-
-        setImei();
     }
 
     @Override
@@ -80,28 +77,72 @@ public class LoginActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * Find IMEI of device and set this value etImei
-     */
-    private void setImei()
-    {
-        TelephonyManager mngr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-        String imei = mngr.getDeviceId();
+    private boolean isConnectedToMyWiFi() {
 
-        etImei.setText(imei);
+        final WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        boolean isMyWiFi;
+
+        WifiInfo info = wifiManager.getConnectionInfo();
+        String mac = info.getMacAddress();
+        String ssid = info.getSSID();
+
+        Log.v(TAG, "The SSID name is: " + ssid);
+
+        if (ssid.length() > 0) {
+            if (TextUtils.equals(ssid.substring(1, ssid.length() - 1), Config.SSID)) {
+                Log.v(TAG, "The SSID & MAC are my: " + ssid + " " + mac);
+
+                return true;
+
+            } else {
+                Log.v(TAG, "The SSID & MAC are not my: " + ssid + " " + mac);
+                return false;
+            }
+        } else {
+            Log.v(TAG, "The SSID lengt is null");
+            return false;
+        }
     }
 
     @OnClick(R.id.btn_login)
-    public void onLoginButtonClick()
-    {
+    public void onLoginButtonClick() {
+
+        if(isConnectedToMyWiFi()) {
+            ParseUser user = new ParseUser();
+
+            user.setUsername(etEmail.getText().toString().toLowerCase().trim());
+            user.setEmail(etEmail.getText().toString().toLowerCase().trim());
+            user.setPassword("123");
+            user.put("displayName", etEmail.getText().toString());
+
+            ParseUser.logInInBackground(etEmail.getText().toString().trim(), "123", new LogInCallback() {
+                @Override public void done(ParseUser user, ParseException e) {
+
+                    if (e == null) {
+                        PrefManager.GENERAL.getPref().putBoolean(Config.PREF_KEY_IS_FIRST_TIME, true);
+                        Intent wifiInfo = new Intent(LoginActivity.this, WiFiInfoActivity.class);
+                        startActivity(wifiInfo);
+                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                        finish();
+                    } else {
+                        Toast.makeText(getBaseContext(), e.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+        else
+        {
+            Toast.makeText(getBaseContext(), "Please connect to RazorGuest Wi-fi", Toast.LENGTH_SHORT).show();
+        }
 
     }
+
     @OnClick(R.id.rl_signup)
-    public void onSignuClick()
-    {
+    public void onSignuClick() {
 
         Toast.makeText(getBaseContext(), "Text", Toast.LENGTH_SHORT).show();
         Intent signupActivity = new Intent(this, SignupActivity.class);
         startActivity(signupActivity);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 }
