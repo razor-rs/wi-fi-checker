@@ -5,6 +5,7 @@
                 android:background="@drawable/gray_gradient">
 
     <RelativeLayout
+        android:id="@+id/contentPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true">
@@ -30,10 +31,18 @@
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/iv_connection_state"
             android:layout_marginTop="10dp"
-            android:textColor="@color/white"
-            android:text="Turn on WiFi to connect"
-            android:visibility="gone"/>
+            android:textColor="@color/white"/>
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/contentPanel"
+        android:layout_marginTop="20dp"
+        android:textStyle="bold"
+        android:textColor="@color/orange"/>
 
 
 </RelativeLayout>

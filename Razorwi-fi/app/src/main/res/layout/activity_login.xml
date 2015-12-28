@@ -3,11 +3,11 @@
                 xmlns:fresco="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/gray_gradient"
-    >
+                android:background="@drawable/gray_gradient">
 
 
     <RelativeLayout
+        android:id="@+id/main_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true">
@@ -37,36 +37,13 @@
                 android:layout_gravity="center"
                 android:backgroundTint="@color/orange"
                 android:hint="E-mail"
-                android:imeOptions="flagNoExtractUi"
+                android:imeOptions="actionGo"
                 android:inputType="textEmailAddress"
                 android:singleLine="true"
                 android:textColor="@color/white"/>
 
         </android.support.design.widget.TextInputLayout>
 
-        <!--<android.support.design.widget.TextInputLayout-->
-        <!--android:id="@+id/input_layout_imei"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginLeft="20dp"-->
-        <!--android:layout_marginRight="20dp"-->
-        <!--android:layout_below="@+id/input_layout_mail"-->
-        <!--android:textColorHint="@color/gray"-->
-        <!--android:theme="@style/TextLabel">-->
-
-        <!--<EditText-->
-        <!--android:id="@+id/etImei"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_gravity="center"-->
-        <!--android:editable="false"-->
-        <!--android:backgroundTint="@color/white"-->
-        <!--android:hint="IMEI"-->
-        <!--android:imeOptions="flagNoExtractUi"-->
-        <!--android:singleLine="true"-->
-        <!--android:textColor="@color/white"/>-->
-
-        <!--</android.support.design.widget.TextInputLayout>-->
 
         <Button
             android:id="@+id/btn_login"
@@ -106,6 +83,8 @@
 
         </RelativeLayout>
     </RelativeLayout>
+
+    <include layout="@layout/include_loader_layout"/>
 
 
 </RelativeLayout>

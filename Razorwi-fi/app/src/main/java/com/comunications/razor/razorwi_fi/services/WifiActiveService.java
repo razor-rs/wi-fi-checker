@@ -6,6 +6,8 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
@@ -65,38 +67,46 @@ public class WifiActiveService extends Service {
 
             case Config.WIFI_DISCONECTED:
 
-                Log.v(TAG, "The wifi is disconected");
                 PrefManager.GENERAL.getPref().putBoolean(Config.PREF_KEY_IS_CONNECTED, false);
                 EventBus.getDefault().post(new EbusWifiChange(false));
 
-                Log.v(TAG, "The wifi is disconected, current session is : " + PrefManager.GENERAL.getPref().getString(Config.PREF_KEY_CURRENT_SESSION_ID) );
 
-                if (isMyWiFi(PrefManager.GENERAL.getPref().getString(Config.PREF_KEY_CURRENT_SSID))) {
+                if(isMyWiFi((PrefManager.GENERAL.getPref().getString(Config.PREF_KEY_CURRENT_SSID))))
+                {
                     ParseQuery<ParseObject> query = ParseQuery.getQuery("WifiSession");
 
-                    Log.v(TAG, "The wifi is disconected and is my SSID");
+                    Log.v(TAG, "Disconnected 1b");
+
+                    query.fromLocalDatastore();
 
                     query.getInBackground(PrefManager.GENERAL.getPref().getString(Config.PREF_KEY_CURRENT_SESSION_ID), new GetCallback<ParseObject>() {
                         @Override public void done(ParseObject wifiSession, ParseException e) {
 
-                            Log.v(TAG, wifiSession.toString() + "session");
+                            Log.v(TAG, "Disconnected 2b");
                             if (e == null) {
+
                                 wifiSession.put("endTime", new Date());
+                                wifiSession.put("isUpdated", true);
+                                Log.v(TAG, "Disconnected put end time 3b");
                                 wifiSession.saveEventually(new SaveCallback() {
                                     @Override public void done(ParseException e) {
-                                        Log.v(TAG, "Update sessiod after delete is done.");
-                                        PrefManager.GENERAL.getPref().putString(Config.PREF_KEY_CURRENT_SSID, "");
-                                        PrefManager.GENERAL.getPref().putString(Config.PREF_KEY_CURRENT_SESSION_ID, "");
+                                        Log.v(TAG, "Update sessiod after delete is done. 4b");
+                                        //PrefManager.GENERAL.getPref().putString(Config.PREF_KEY_CURRENT_SSID, "");
+                                        //PrefManager.GENERAL.getPref().putString(Config.PREF_KEY_CURRENT_SESSION_ID, "");
                                     }
                                 });
-                            }
-                            else
-                            {
+                            } else {
                                 Log.v(TAG, "Error while updating: " + e.toString());
                             }
                         }
                     });
                 }
+                else
+                {
+                    Log.v(TAG, "Not my wifi after disconecting . Wifi name is " + PrefManager.GENERAL.getPref().getString(Config.PREF_KEY_CURRENT_SSID));
+                }
+
+
                 stopSelf();
                 break;
         }
@@ -116,9 +126,11 @@ public class WifiActiveService extends Service {
                 String mac = info.getMacAddress();
                 String ssid = info.getSSID();
 
+
+                Log.v(TAG, "The SSID & MAC is: " + ssid + " " + mac);
                 PrefManager.GENERAL.getPref().putString(Config.PREF_KEY_CURRENT_SSID, ssid);
 
-                Log.v(TAG, "The SSID name is: " + ssid);
+
 
                 if (ssid.length() > 0) {
 
@@ -126,9 +138,7 @@ public class WifiActiveService extends Service {
                         Log.v(TAG, "The SSID & MAC are my: " + ssid + " " + mac);
 
                         if (ParseUser.getCurrentUser() != null) {
-                            if (isConnectedAlready) {
 
-                            } else {
                                 PrefManager.GENERAL.getPref().putBoolean(Config.PREF_KEY_IS_CONNECTED, true);
                                 createNotification("Razor Comunications", "Welcome " + ParseUser.getCurrentUser().getUsername(), ssid);
 
@@ -136,17 +146,34 @@ public class WifiActiveService extends Service {
                                 sessionObject.put("userName", ParseUser.getCurrentUser());
                                 sessionObject.put("startTime", new Date());
                                 sessionObject.put("endTime", new Date());
+                                sessionObject.put("email",ParseUser.getCurrentUser().getEmail());
+                                sessionObject.put("isUpdated", false);
+
+                                Log.v(TAG, "Session before saveEventually + " );
+
                                 sessionObject.saveEventually(new SaveCallback() {
                                     @Override public void done(ParseException e) {
                                         if (e == null) {
+                                            Log.v(TAG, "Session " + sessionObject.getObjectId() + " has been saved in cloud.");
                                             String sessionId = sessionObject.getObjectId();
                                             PrefManager.GENERAL.getPref().putString(Config.PREF_KEY_CURRENT_SESSION_ID, sessionId);
+
+                                            sessionObject.pinInBackground(new SaveCallback() {
+                                                @Override public void done(ParseException e) {
+                                                    if (e == null) {
+                                                        Log.v(TAG, "Session " + sessionObject.getObjectId() + " has been saved in local database.");
+                                                    } else {
+                                                        Log.v(TAG, "Session " + sessionObject.getObjectId() + " not saved in local database.");
+                                                    }
+                                                }
+                                            });
+
                                         } else {
-                                            Log.v(TAG, "Session not Saved");
+                                            Log.v(TAG, "Session not Saved in Cloud + " + e.toString());
                                         }
                                     }
                                 });
-                            }
+
 
                             EventBus.getDefault().post(new EbusWifiChange(true));
 
@@ -192,5 +219,11 @@ public class WifiActiveService extends Service {
                 .setSmallIcon(R.drawable.ic_notification)
                 .build();
         ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, n);
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

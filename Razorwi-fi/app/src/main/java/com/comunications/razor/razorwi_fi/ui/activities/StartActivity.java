@@ -32,14 +32,12 @@ public class StartActivity extends AppCompatActivity {
 
         if(ParseUser.getCurrentUser() != null)
         {
-            Log.d("ParseUserWiFi", "Parse object is not null");
             Intent wifiInfo = new Intent(this, WiFiInfoActivity.class);
             startActivity(wifiInfo);
             finish();
         }
         else
         {
-            Log.d("ParseUserWiFi", "Parse object is null");
             Intent loginActivity = new Intent(this, LoginActivity.class);
             startActivity(loginActivity);
             finish();

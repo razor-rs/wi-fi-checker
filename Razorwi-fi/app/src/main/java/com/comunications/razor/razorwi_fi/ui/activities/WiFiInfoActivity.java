@@ -25,7 +25,9 @@ import android.widget.TextView;
 import com.comunications.razor.razorwi_fi.Config;
 import com.comunications.razor.razorwi_fi.R;
 import com.comunications.razor.razorwi_fi.eventbus.EbusWifiChange;
+import com.comunications.razor.razorwi_fi.services.WifiActiveService;
 import com.comunications.razor.razorwi_fi.storage.PrefManager;
+import com.parse.ParseUser;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -41,6 +43,7 @@ public class WiFiInfoActivity extends AppCompatActivity {
 
     @Bind(R.id.iv_connection_state) ImageView ivConnectionState;
     @Bind(R.id.tv_connection) TextView tvConnection;
+    @Bind(R.id.tv_username) TextView tvUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,52 +54,60 @@ public class WiFiInfoActivity extends AppCompatActivity {
 
         isFirstTime = PrefManager.GENERAL.getPref().getBoolean(Config.PREF_KEY_IS_FIRST_TIME);
         isConnectedToMyWiFi = isConnectedToMyWiFi();
+        tvUsername.setText(ParseUser.getCurrentUser().getString("username"));
 
 
         if (isFirstTime) {
             PrefManager.GENERAL.getPref().putBoolean(Config.PREF_KEY_IS_FIRST_TIME, false);
-            //TODO Send session data
-            setConnectionImage(isConnectedToMyWiFi);
-        } else {
 
+            Intent wifiService = new Intent(this, WifiActiveService.class);
+            wifiService.putExtra(Config.BUNDEL_KEY_CONNECTION_STATE, Config.WIFI_CONNECTED);
+            startService(wifiService);
+            setConnectionImage(isConnectedToMyWiFi);
+
+        } else {
             setConnectionImage(isConnectedToMyWiFi);
         }
 
     }
 
+    /**
+     * Set appropiate connection status
+     * @param isConnectedToMyWiFi
+     */
     private void setConnectionImage(boolean isConnectedToMyWiFi) {
         if (isConnectedToMyWiFi) {
             ivConnectionState.setImageResource(R.drawable.connected);
-            tvConnection.setVisibility(View.GONE);
+            tvConnection.setText(R.string.label_you_are_connected);
+
         } else {
             ivConnectionState.setImageResource(R.drawable.disconnected);
-            tvConnection.setVisibility(View.VISIBLE);
+            tvConnection.setText(R.string.label_not_connected);
         }
     }
 
+    /**
+     * Check if user is connected to my wifi
+     * @return true or false
+     */
     private boolean isConnectedToMyWiFi() {
 
         final WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        boolean isMyWiFi;
 
         WifiInfo info = wifiManager.getConnectionInfo();
         String mac = info.getMacAddress();
         String ssid = info.getSSID();
 
-        Log.v(TAG, "The SSID name is: " + ssid);
-
         if (ssid.length() > 0) {
             if (TextUtils.equals(ssid.substring(1, ssid.length() - 1), Config.SSID)) {
-                Log.v(TAG, "The SSID & MAC are my: " + ssid + " " + mac);
 
                 return true;
 
             } else {
-                Log.v(TAG, "The SSID & MAC are not my: " + ssid + " " + mac);
+
                 return false;
             }
         } else {
-            Log.v(TAG, "The SSID lengt is null");
             return false;
         }
     }
@@ -109,12 +120,11 @@ public class WiFiInfoActivity extends AppCompatActivity {
     }
 
     /**
-     * Set Notification item number
+     * This event is used to trigger change of connection status image and text
      *
      * @param wifiEvent
      */
     public void onEventMainThread(EbusWifiChange wifiEvent) {
-
 
         setConnectionImage(wifiEvent.isConnectedToRazor());
 

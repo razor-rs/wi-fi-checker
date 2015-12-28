@@ -10,12 +10,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
@@ -32,18 +35,21 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class SignupActivity extends AppCompatActivity {
+public class SignupActivity extends AppCompatActivity implements View.OnKeyListener {
 
     private final static String TAG = LoginActivity.class.getSimpleName();
 
     @Bind(R.id.etEmail) EditText etEmail;
     @Bind(R.id.btn_signup) Button bntSignup;
+    @Bind(R.id.rl_container) RelativeLayout rlContainer;
+    @Bind(R.id.rl_loading) RelativeLayout rlLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
         ButterKnife.bind(this);
+        etEmail.setOnKeyListener(this);
     }
 
     @Override
@@ -66,6 +72,21 @@ public class SignupActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    private void setLoading(boolean visible)
+    {
+        if(visible)
+        {
+            rlContainer.setVisibility(View.GONE);
+            rlLoader.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            rlContainer.setVisibility(View.VISIBLE);
+            rlLoader.setVisibility(View.GONE);
+        }
     }
 
     private boolean isConnectedToMyWiFi() {
@@ -98,7 +119,12 @@ public class SignupActivity extends AppCompatActivity {
     @OnClick(R.id.btn_signup)
     public void onSignupClick()
     {
+        signUpParse();
+    }
+
+    private void signUpParse() {
         if(isConnectedToMyWiFi()) {
+            setLoading(true);
             ParseUser user = new ParseUser();
 
             user.setUsername(etEmail.getText().toString().toLowerCase().trim());
@@ -115,13 +141,33 @@ public class SignupActivity extends AppCompatActivity {
                         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                         finish();
                     } else
-                        Log.d("ParseInterestME", "Error " + e.toString());
+                        Log.d("ParseInterestME", e.getLocalizedMessage());
+                    setLoading(false);
                 }
             });
+
         }
         else
         {
             Toast.makeText(getBaseContext(), "Please connect to RazorGuest Wi-fi", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public boolean onKey(View v, int keyCode, KeyEvent event) {
+        switch (v.getId()) {
+            case R.id.etEmail:
+                if ((keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    signUpParse();
+                    hideKeyboardImplicit(getBaseContext(),etEmail);
+                }
+                break;
+        }
+        return false;
+    }
+
+    public static void hideKeyboardImplicit(Context context,EditText editText){
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
     }
 }

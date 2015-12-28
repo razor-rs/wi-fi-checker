@@ -4,7 +4,6 @@ import android.app.Application;
 import android.preference.PreferenceManager;
 
 import com.comunications.razor.razorwi_fi.storage.PrefManager;
-import com.facebook.drawee.backends.pipeline.Fresco;
 import com.parse.Parse;
 import com.parse.ParseObject;
 
@@ -23,6 +22,7 @@ public class RazorWiFiApp extends Application{
         super.onCreate();
 
         appInstance = this;
+        Parse.enableLocalDatastore(this);
         Parse.initialize(this, Config.PARSE_APPLICATION_KEY, Config.PARSE_CLIENT_KEY);
         PrefManager.GENERAL.initialize(getBaseContext());
     }

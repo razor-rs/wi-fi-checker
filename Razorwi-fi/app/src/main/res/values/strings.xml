@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Razor wi-fi</string>
     <string name="action_settings">Settings</string>
+    <string name="please_wait">Please wait ...</string>
+    <string name="message_please_connect">Please connect to RazorGuest Wi-fi</string>
+    <string name="label_you_are_connected">You are connected</string>
+    <string name="label_not_connected">Turn on WiFi to connect</string>
 </resources>
